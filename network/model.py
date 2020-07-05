@@ -390,6 +390,70 @@ def puigcerver(input_size, d_model):
     cnn = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="valid")(cnn)
 
     cnn = Dropout(rate=0.2)(cnn)
+    cnn = Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1), padding="same")(cnn)
+    cnn = BatchNormalization()(cnn)
+    cnn = LeakyReLU(alpha=0.01)(cnn)
+    # cnn = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="valid")(cnn)
+
+    cnn = Dropout(rate=0.2)(cnn)
+    cnn = Conv2D(filters=128, kernel_size=(3, 3), strides=(1, 1), padding="same")(cnn)
+    cnn = BatchNormalization()(cnn)
+    cnn = LeakyReLU(alpha=0.01)(cnn)
+
+    cnn = Dropout(rate=0.2)(cnn)
+    cnn = Conv2D(filters=128, kernel_size=(3, 3), strides=(1, 1), padding="same")(cnn)
+    cnn = BatchNormalization()(cnn)
+    cnn = LeakyReLU(alpha=0.01)(cnn)
+
+    cnn = Dropout(rate=0.2)(cnn)
+    cnn = Conv2D(filters=80, kernel_size=(3, 3), strides=(1, 1), padding="same")(cnn)
+    cnn = BatchNormalization()(cnn)
+    cnn = LeakyReLU(alpha=0.01)(cnn)
+
+    shape = cnn.get_shape()
+    blstm = Reshape((shape[1] * 2, int(shape[2]/2) * shape[3]))(cnn)
+
+    blstm = Bidirectional(LSTM(units=256, return_sequences=True, dropout=0.5))(blstm)
+    blstm = Bidirectional(LSTM(units=256, return_sequences=True, dropout=0.5))(blstm)
+    blstm = Bidirectional(LSTM(units=256, return_sequences=True, dropout=0.5))(blstm)
+    blstm = Bidirectional(LSTM(units=256, return_sequences=True, dropout=0.5))(blstm)
+    blstm = Bidirectional(LSTM(units=256, return_sequences=True, dropout=0.5))(blstm)
+    blstm = Bidirectional(LSTM(units=256, return_sequences=True, dropout=0.5))(blstm)
+    blstm = Bidirectional(LSTM(units=256, return_sequences=True, dropout=0.5))(blstm)
+
+    blstm = Dropout(rate=0.5)(blstm)
+    output_data = Dense(units=d_model, activation="softmax")(blstm)
+
+    return (input_data, output_data)
+
+def puigcerver_old(input_size, d_model):
+    """
+    Convolucional Recurrent Neural Network by Puigcerver et al.
+
+    Reference:
+        Joan Puigcerver.
+        Are multidimensional recurrent layers really necessary for handwritten text recognition?
+        In: Document Analysis and Recognition (ICDAR), 2017 14th
+        IAPR International Conference on, vol. 1, pp. 67–72. IEEE (2017)
+
+        Carlos Mocholí Calvo and Enrique Vidal Ruiz.
+        Development and experimentation of a deep learning system for convolutional and recurrent neural networks
+        Escola Tècnica Superior d’Enginyeria Informàtica, Universitat Politècnica de València, 2018
+    """
+
+    input_data = Input(name="input", shape=input_size)
+
+    cnn = Conv2D(filters=16, kernel_size=(3, 3), strides=(1, 1), padding="same")(input_data)
+    cnn = BatchNormalization()(cnn)
+    cnn = LeakyReLU(alpha=0.01)(cnn)
+    cnn = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="valid")(cnn)
+
+    cnn = Conv2D(filters=32, kernel_size=(3, 3), strides=(1, 1), padding="same")(cnn)
+    cnn = BatchNormalization()(cnn)
+    cnn = LeakyReLU(alpha=0.01)(cnn)
+    cnn = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding="valid")(cnn)
+
+    cnn = Dropout(rate=0.2)(cnn)
     cnn = Conv2D(filters=48, kernel_size=(3, 3), strides=(1, 1), padding="same")(cnn)
     cnn = BatchNormalization()(cnn)
     cnn = LeakyReLU(alpha=0.01)(cnn)
