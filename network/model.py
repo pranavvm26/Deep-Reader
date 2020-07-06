@@ -513,6 +513,63 @@ def flor(input_size, d_model):
     cnn = FullGatedConv2D(filters=48, kernel_size=(3, 3), padding="same", kernel_constraint=MaxNorm(4, [0, 1, 2]))(cnn)
     cnn = Dropout(rate=0.2)(cnn)
 
+    cnn = Conv2D(filters=56, kernel_size=(1, 4), strides=(1, 2), padding="same", kernel_initializer="he_uniform")(cnn)
+    cnn = PReLU(shared_axes=[1, 2])(cnn)
+    cnn = BatchNormalization(renorm=True)(cnn)
+    cnn = FullGatedConv2D(filters=56, kernel_size=(3, 3), padding="same", kernel_constraint=MaxNorm(4, [0, 1, 2]))(cnn)
+    cnn = Dropout(rate=0.2)(cnn)
+
+    cnn = Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1), padding="same", kernel_initializer="he_uniform")(cnn)
+    cnn = PReLU(shared_axes=[1, 2])(cnn)
+    cnn = BatchNormalization(renorm=True)(cnn)
+
+    # cnn = MaxPooling2D(pool_size=(1, 2), strides=(1, 2), padding="valid")(cnn)
+
+    shape = cnn.get_shape()
+    nb_units = shape[3]
+
+    bgru = Reshape((shape[1] * shape[2], nb_units))(cnn)
+
+    bgru = Bidirectional(GRU(units=nb_units, return_sequences=True))(bgru)
+    bgru = Dense(units=nb_units * 2)(bgru)
+
+    bgru = Bidirectional(GRU(units=nb_units, return_sequences=True))(bgru)
+    bgru = Bidirectional(GRU(units=nb_units, return_sequences=True))(bgru)
+    bgru = Bidirectional(GRU(units=nb_units, return_sequences=True))(bgru)
+    output_data = Dense(units=d_model, activation="softmax")(bgru)
+
+    return (input_data, output_data)
+
+
+def flor_old(input_size, d_model):
+    """
+    Gated Convolucional Recurrent Neural Network by Flor et al.
+    """
+
+    input_data = Input(name="input", shape=input_size)
+
+    cnn = Conv2D(filters=16, kernel_size=(3, 3), strides=(2, 2), padding="same", kernel_initializer="he_uniform")(input_data)
+    cnn = PReLU(shared_axes=[1, 2])(cnn)
+    cnn = BatchNormalization(renorm=True)(cnn)
+    cnn = FullGatedConv2D(filters=16, kernel_size=(3, 3), padding="same")(cnn)
+
+    cnn = Conv2D(filters=32, kernel_size=(3, 3), strides=(1, 1), padding="same", kernel_initializer="he_uniform")(cnn)
+    cnn = PReLU(shared_axes=[1, 2])(cnn)
+    cnn = BatchNormalization(renorm=True)(cnn)
+    cnn = FullGatedConv2D(filters=32, kernel_size=(3, 3), padding="same")(cnn)
+
+    cnn = Conv2D(filters=40, kernel_size=(2, 4), strides=(2, 4), padding="same", kernel_initializer="he_uniform")(cnn)
+    cnn = PReLU(shared_axes=[1, 2])(cnn)
+    cnn = BatchNormalization(renorm=True)(cnn)
+    cnn = FullGatedConv2D(filters=40, kernel_size=(3, 3), padding="same", kernel_constraint=MaxNorm(4, [0, 1, 2]))(cnn)
+    cnn = Dropout(rate=0.2)(cnn)
+
+    cnn = Conv2D(filters=48, kernel_size=(3, 3), strides=(1, 1), padding="same", kernel_initializer="he_uniform")(cnn)
+    cnn = PReLU(shared_axes=[1, 2])(cnn)
+    cnn = BatchNormalization(renorm=True)(cnn)
+    cnn = FullGatedConv2D(filters=48, kernel_size=(3, 3), padding="same", kernel_constraint=MaxNorm(4, [0, 1, 2]))(cnn)
+    cnn = Dropout(rate=0.2)(cnn)
+
     cnn = Conv2D(filters=56, kernel_size=(2, 4), strides=(2, 4), padding="same", kernel_initializer="he_uniform")(cnn)
     cnn = PReLU(shared_axes=[1, 2])(cnn)
     cnn = BatchNormalization(renorm=True)(cnn)
